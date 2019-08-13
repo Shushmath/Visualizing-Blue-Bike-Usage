@@ -1,0 +1,67 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(lubridate)
+library(ggplot2)
+
+bikeshare$starttime <- as.POSIXct(bikeshare$starttime)
+bikeshare$stoptime <- as.POSIXct(bikeshare$stoptime)
+bikeshare$hour <- as.factor(hour(bikeshare$starttime))
+bikeshare$month <- as.factor(month(bikeshare$starttime))
+bikeshare$year <- as.factor(year(bikeshare$starttime))
+
+```
+
+
+```{r}
+paste('Entire trips:',dim(bikeshare)[1])
+
+ggplot(bikeshare, aes(x=age))
+
+unique(year(bikeshare$starttime))
+bikeshare %>%
+  group_by(hour) %>%
+  summarise(count=n()) %>%
+  ggplot(aes(x=hour, y=count, col=hour)) +
+  geom_col(fill='white') +
+  ggtitle('Hour of day vs Ride count')
+```
+
+```{r}
+bikeshare %>%
+  group_by(month) %>%
+  summarise(count=n()) %>%
+  ggplot(aes(x=month, y=count, col=month, group=1)) +
+  geom_line() + geom_point() +
+  ggtitle('Month vs Ride count')
+```
+
+
+```{r}
+bikeshare %>%
+  group_by(start.station.name) %>%
+  summarise(count=n()) %>% top_n(10) %>% arrange(desc(count))
+```
+
+```{r}
+ggplot(bikeshare[bikeshare$tripduration<2500,], aes(x=tripduration)) +
+  geom_histogram(bins=100)+
+  ggtitle("User reservation based on time")
+```
+
+```{r}
+ggplot(bikeshare, aes(x=gender)) + geom_bar()
+
+bikeshare %>% mutate(dteday= as.Date(starttime))%>%
+  group_by(dteday) %>%
+  summarize(Subscriber=sum(usertype=='Subscriber'), Customer=sum(usertype=='Customer')) %>%
+  ggplot()+
+  geom_line(aes( x=dteday, y= Subscriber, group=1, colour="Subscribed users"))+
+  geom_line(aes( x=dteday, y= Customer,group=1, colour="Casual users"))+
+  ggtitle("Casual and Subscribed Users Usage flow")
+```
+
